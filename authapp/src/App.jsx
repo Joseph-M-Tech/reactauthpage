@@ -4,6 +4,7 @@ import { Login } from './pages/Login';
 import { Signup } from './pages/Signup';
 import { Dashboard } from './pages/Dashboard';
 import { ProtectedRoute } from './components/ProtectedRoute';
+// import styles from './AuthLayout.module.css';
 import './App.css';
 
 function App() {
