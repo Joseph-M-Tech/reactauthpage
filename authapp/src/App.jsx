@@ -3,11 +3,11 @@ import { AuthProvider } from './contexts/AuthContext';
 import { Login } from './pages/Login';
 import { Signup } from './pages/Signup';
 import { Dashboard } from './pages/Dashboard';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import './App.css';
 
 function App() {
   return (
-    // Wrap the entire app with the AuthProvider to grant all components access to auth state
     <AuthProvider>
       <Router>
         <div className="app">
@@ -15,10 +15,28 @@ function App() {
             {/* Public Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
-            {/* Protected Route */}
-            <Route path="/dashboard" element={<Dashboard />} />
-            {/* Catch all route - redirect to dashboard if logged in, else to login */}
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            
+            {/* Protected Routes */}
+            <Route 
+              path="/dashboard" 
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Redirect root path */}
+            <Route 
+              path="/" 
+              element={<Navigate to="/dashboard" replace />} 
+            />
+            
+            {/* Handle 404 - redirect to dashboard */}
+            <Route 
+              path="*" 
+              element={<Navigate to="/dashboard" replace />} 
+            />
           </Routes>
         </div>
       </Router>

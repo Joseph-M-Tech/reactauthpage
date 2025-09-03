@@ -1,9 +1,26 @@
+import { motion } from 'framer-motion';
+
 export const Input = ({ label, type = 'text', error, ...props }) => {
   return (
-    <div>
-      <label>{label}</label>
-      <input type={type} {...props} />
-      {error && <p style={{ color: 'red', fontSize: '0.8rem' }}>{error}</p>}
+    <div className="relative mb-6">
+      <input
+        type={type}
+        placeholder=" "
+        className="peer h-12 w-full border-b-2 border-gray-300 text-gray-900 placeholder-transparent focus:outline-none focus:border-blue-600 transition-colors duration-300 bg-transparent"
+        {...props}
+      />
+      <label className="absolute left-0 -top-3.5 text-gray-600 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-2 peer-focus:-top-3.5 peer-focus:text-sm peer-focus:text-blue-600">
+        {label}
+      </label>
+      {error && (
+        <motion.p 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-1 text-sm text-red-600"
+        >
+          {error}
+        </motion.p>
+      )}
     </div>
   );
 };

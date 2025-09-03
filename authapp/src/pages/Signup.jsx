@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Input } from '../components/Input';
+import { Button } from '../components/Button';
+import { AuthLayout } from '../components/AuthLayout';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 export const Signup = () => {
   const [formData, setFormData] = useState({
@@ -9,26 +12,20 @@ export const Signup = () => {
     password: '',
     confirmPassword: '',
   });
-  const [localError, setLocalError] = useState(null); // For client-side validation errors
+  const [localError, setLocalError] = useState(null);
   const { login, isAuthenticated, loading, error, clearError } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if already logged in
   useEffect(() => {
     if (isAuthenticated) {
       navigate('/dashboard', { replace: true });
     }
   }, [isAuthenticated, navigate]);
 
-  // Clear auth errors when user starts typing
   useEffect(() => {
-    if (error) {
-      clearError();
-    }
-    if (localError) {
-      setLocalError(null);
-    }
-  }, [formData.email, formData.password, formData.confirmPassword]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (error) clearError();
+    if (localError) setLocalError(null);
+  }, [formData.email, formData.password, formData.confirmPassword]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -40,9 +37,8 @@ export const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLocalError(null); // Reset local errors on new submission
+    setLocalError(null);
 
-    // 1. Client-side validation
     if (formData.password !== formData.confirmPassword) {
       setLocalError('Passwords do not match');
       return;
@@ -53,7 +49,6 @@ export const Signup = () => {
       return;
     }
 
-    // 2. Attempt to create the user via the mock API
     try {
       const response = await fetch('http://localhost:3001/users', {
         method: 'POST',
@@ -62,36 +57,36 @@ export const Signup = () => {
         },
         body: JSON.stringify({
           email: formData.email,
-          password: formData.password, // In a real app, this would be hashed by the backend!
+          password: formData.password,
         }),
       });
 
       if (!response.ok) {
-        // Handle errors from the server, e.g., "Email already exists"
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to create account');
       }
 
-      const newUser = await response.json();
-      console.log('Signup successful:', newUser);
-
-      // 3. Automatically log the user in after successful signup
       await login(formData.email, formData.password);
 
-      // The `login` function will update the context and the useEffect above will redirect to /dashboard
-
     } catch (err) {
-      // Handle any errors that occurred during the fetch or login process
       setLocalError(err.message);
     }
   };
 
   return (
-    <div>
-      <h2>Create Your Account</h2>
-      <form onSubmit={handleSubmit}>
+    <AuthLayout 
+      title="Join Us" 
+      subtitle="Create your account to get started"
+    >
+      <motion.form
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.4, duration: 0.6 }}
+        onSubmit={handleSubmit}
+        className="space-y-6"
+      >
         <Input
-          label="Email"
+          label="Email Address"
           type="email"
           name="email"
           value={formData.email}
@@ -114,17 +109,45 @@ export const Signup = () => {
           onChange={handleChange}
           required
         />
-        {/* Display local form errors or auth context errors */}
+        
         {(localError || error) && (
-          <p style={{ color: 'red', fontSize: '0.8rem' }}>{localError || error}</p>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="p-3 bg-red-50 border border-red-200 rounded-lg"
+          >
+            <p className="text-sm text-red-600 text-center">{localError || error}</p>
+          </motion.div>
         )}
-        <button type="submit" disabled={loading}>
-          {loading ? 'Creating Account...' : 'Sign Up'}
-        </button>
-      </form>
-      <p>
-        Already have an account? <Link to="/login">Log in here</Link>.
-      </p>
-    </div>
+
+        <Button disabled={loading}>
+          {loading ? (
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+              Creating Account...
+            </div>
+          ) : (
+            'Create Account'
+          )}
+        </Button>
+      </motion.form>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.6, duration: 0.6 }}
+        className="text-center mt-6 pt-6 border-t border-gray-100"
+      >
+        <p className="text-gray-600">
+          Already have an account?{' '}
+          <Link
+            to="/login"
+            className="text-blue-600 hover:text-blue-700 font-semibold transition-colors"
+          >
+            Sign in here
+          </Link>
+        </p>
+      </motion.div>
+    </AuthLayout>
   );
 };
